@@ -16,11 +16,14 @@
 
   <style>
     :root {
-      --bg-color: #1e1e24;
-      --card-bg: #2b2b36;
-      --accent-color: #6200ee;
-      --text-color: #ffffff;
-      --text-muted: #a0a0b0;
+      --bg-color: #121216;
+      --card-bg: #1a1a22;
+      --border-color: #2a2a36;
+      --accent-color: #6366f1;
+      --success-color: #10b981;
+      --text-color: #f3f4f6;
+      --text-muted: #9ca3af;
+      --highlight-color: rgba(99, 102, 241, 0.4);
     }
 
     body {
@@ -45,23 +48,35 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .icon-btn {
       background: var(--card-bg);
-      border: 1px solid #3f3f50;
+      border: 1px solid var(--border-color);
       color: var(--text-color);
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 16px;
+      padding: 8px;
+      border-radius: 10px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .lang-select {
       background: var(--card-bg);
       color: var(--text-color);
-      border: 1px solid #3f3f50;
+      border: 1px solid var(--border-color);
       padding: 6px 10px;
       border-radius: 8px;
       font-size: 14px;
@@ -70,10 +85,11 @@
 
     .stats-card {
       background: var(--card-bg);
+      border: 1px solid var(--border-color);
       width: 100%;
       max-width: 400px;
       padding: 12px 16px;
-      border-radius: 12px;
+      border-radius: 14px;
       display: flex;
       justify-content: space-around;
       align-items: center;
@@ -82,24 +98,38 @@
     }
 
     .stat-item { text-align: center; }
-    .stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-    .stat-value { font-size: 20px; font-weight: bold; }
+    .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .stat-value { font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px; }
 
     #board-container {
       width: 100%;
       max-width: 400px;
       aspect-ratio: 1;
       margin-bottom: 12px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .square-highlight {
+      background-color: var(--highlight-color) !important;
     }
 
     .status-box {
       width: 100%;
       max-width: 400px;
       text-align: center;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       min-height: 24px;
       margin-bottom: 12px;
+      color: var(--text-muted);
+      transition: all 0.3s;
+    }
+
+    .status-success {
+      color: var(--success-color);
+      font-size: 16px;
     }
 
     .controls {
@@ -107,24 +137,41 @@
       max-width: 400px;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 10px;
     }
 
     button {
       background: var(--card-bg);
       color: var(--text-color);
-      border: 1px solid #3f3f50;
-      padding: 10px;
-      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      border-radius: 12px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+
+    button svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
     }
 
     .btn-primary {
       background: var(--accent-color);
       border: none;
       grid-column: span 2;
+    }
+
+    .btn-success {
+      background: var(--success-color) !important;
     }
 
     .modal-overlay {
@@ -140,8 +187,9 @@
 
     .modal {
       background: var(--card-bg);
+      border: 1px solid var(--border-color);
       padding: 24px;
-      border-radius: 16px;
+      border-radius: 20px;
       width: 100%;
       max-width: 340px;
       text-align: center;
@@ -150,16 +198,16 @@
     .preset-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 10px;
       margin: 16px 0;
     }
 
     .input-rating {
       width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #3f3f50;
-      background: #1e1e24;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: #121216;
       color: #fff;
       font-size: 16px;
       text-align: center;
@@ -174,16 +222,18 @@
 
   <!-- Header -->
   <div class="header-bar">
-    <button class="icon-btn" onclick="openRatingModal()">⚙️</button>
-    <span style="font-weight: bold; font-size: 18px;">♟️ Chess Puzzles</span>
+    <button class="icon-btn" onclick="openRatingModal()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </button>
+    <span style="font-weight: 700; font-size: 16px; letter-spacing: 0.5px;">CHESS PUZZLES</span>
     <select id="langSelect" class="lang-select" onchange="changeLanguage(this.value)">
-      <option value="ru">Русский</option>
-      <option value="en">English</option>
-      <option value="he">עברית</option>
+      <option value="ru">RU</option>
+      <option value="en">EN</option>
+      <option value="he">HE</option>
     </select>
   </div>
 
-  <!-- Stats -->
+  <!-- Stats Bar -->
   <div class="stats-card">
     <div class="stat-item">
       <div class="stat-label" id="lbl-rating">Рейтинг</div>
@@ -191,7 +241,10 @@
     </div>
     <div class="stat-item">
       <div class="stat-label" id="lbl-streak">Серия</div>
-      <div class="stat-value" id="val-streak">🔥 0</div>
+      <div class="stat-value">
+        <svg style="width:16px; height:16px; stroke: #f59e0b;" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>
+        <span id="val-streak">0</span>
+      </div>
     </div>
     <div class="stat-item">
       <div class="stat-label" id="lbl-turn">Ход</div>
@@ -204,21 +257,34 @@
     <div id="board" style="width: 100%;"></div>
   </div>
 
+  <!-- Status -->
   <div id="status" class="status-box"></div>
 
   <!-- Controls -->
   <div class="controls">
-    <button id="btn-hint" onclick="getHint()">💡 <span id="lbl-hint">Подсказка</span></button>
-    <button id="btn-solution" onclick="showSolution()">👁️ <span id="lbl-solution">Решение</span></button>
-    <button id="btn-next" class="btn-primary" onclick="loadNextPuzzle()">➡️ <span id="lbl-next">Следующая задача</span></button>
-    <button id="btn-analysis" class="btn-primary hidden" style="background:#2196F3;" onclick="toggleAnalysis()">🔍 <span id="lbl-analysis">Режим анализа</span></button>
+    <button id="btn-hint" onclick="getHint()">
+      <svg viewBox="0 0 24 24"><path d="M9 18h6pM10 22h4pM15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg>
+      <span id="lbl-hint">Подсказка</span>
+    </button>
+    <button id="btn-solution" onclick="showSolution()">
+      <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+      <span id="lbl-solution">Решение</span>
+    </button>
+    <button id="btn-next" class="btn-primary" onclick="loadNextPuzzle()">
+      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      <span id="lbl-next">Следующая задача</span>
+    </button>
+    <button id="btn-analysis" class="btn-primary hidden" style="background:#0284c7;" onclick="toggleAnalysis()">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <span id="lbl-analysis">Режим анализа</span>
+    </button>
   </div>
 
   <!-- Rating Modal -->
   <div id="ratingModal" class="modal-overlay">
     <div class="modal">
-      <h2 id="modal-title" style="margin-top:0;">Выберите рейтинг</h2>
-      <p id="modal-desc" style="font-size: 13px; color: var(--text-muted);">Укажите ваш рейтинг Lichess:</p>
+      <h3 id="modal-title" style="margin-top:0;">Ваш рейтинг</h3>
+      <p id="modal-desc" style="font-size: 13px; color: var(--text-muted);">Выберите пресет или введите свой рейтинг:</p>
       
       <div class="preset-grid">
         <button onclick="setInitialRating(800)">800<br><small id="p-novice">Новичок</small></button>
@@ -237,9 +303,9 @@
     if (tg) { tg.ready(); tg.expand(); }
 
     const i18n = {
-      ru: { rating: "Рейтинг", streak: "Серия", turn: "Ход", whiteTurn: "Белые", blackTurn: "Черные", hint: "Подсказка", solution: "Решение", next: "Следующая", analysis: "Анализ", modalTitle: "Ваш рейтинг", modalDesc: "Выбери пресет или введи свой рейтинг:", novice: "Новичок", amateur: "Любитель", pro: "Опытный", master: "Мастер", start: "Сохранить", correct: "🎉 Правильно! (+10)", wrong: "❌ Неверный ход! (-1)", yourTurn: "Ваш ход!", hintMsg: "Ходит фигура с поля ", solutionMsg: "Решение показано на доске.", loading: "Загрузка задачи...", analysisActive: "Режим анализа включен" },
-      en: { rating: "Rating", streak: "Streak", turn: "Turn", whiteTurn: "White", blackTurn: "Black", hint: "Hint", solution: "Solution", next: "Next Puzzle", analysis: "Analysis", modalTitle: "Your Rating", modalDesc: "Select preset or enter rating:", novice: "Novice", amateur: "Amateur", pro: "Pro", master: "Master", start: "Save", correct: "🎉 Correct! (+10)", wrong: "❌ Wrong move! (-1)", yourTurn: "Your turn!", hintMsg: "Move piece from ", solutionMsg: "Solution displayed.", loading: "Loading puzzle...", analysisActive: "Free analysis mode active" },
-      he: { rating: "דירוג", streak: "רצף", turn: "תור", whiteTurn: "לבן", blackTurn: "שחור", hint: "רמז", solution: "פתרון", next: "חידה הבאה", analysis: "ניתוח", modalTitle: "הדירוג שלך", modalDesc: "בחר רמה או הזן דירוג:", novice: "מתחיל", amateur: "חובבן", pro: "מתקדם", master: "מאסטר", start: "שמור", correct: "🎉 נכון מאוד! (+10)", wrong: "❌ מהלך שגוי! (-1)", yourTurn: "התור שלך!", hintMsg: "הזז את הכלי מ-", solutionMsg: "הפתרון מוצג.", loading: "טוען חידה...", analysisActive: "מצב ניתוח חופשי פעיל" }
+      ru: { rating: "Рейтинг", streak: "Серия", turn: "Ход", whiteTurn: "Ваш (Белые)", blackTurn: "Ваш (Черные)", hint: "Подсказка", solution: "Решение", next: "Следующая задача", analysis: "Анализ", modalTitle: "Ваш рейтинг", modalDesc: "Выбери пресет или введи свой рейтинг:", novice: "Новичок", amateur: "Любитель", pro: "Опытный", master: "Мастер", start: "Сохранить", correct: "🎉 Отлично! Задача решена (+10)", tryAgain: "Неверно. Попробуйте еще раз!", wrong: "Вторая ошибка! (-1 к рейтингу)", yourTurn: "Ваш ход! Найдите лучший вариант.", hintMsg: "Походите фигурой с ", solutionMsg: "Сделайте подсвеченный ход на доске", loading: "Поиск задачи...", analysisActive: "Режим свободного анализа" },
+      en: { rating: "Rating", streak: "Streak", turn: "Turn", whiteTurn: "Your move (White)", blackTurn: "Your move (Black)", hint: "Hint", solution: "Solution", next: "Next Puzzle", analysis: "Analysis", modalTitle: "Your Rating", modalDesc: "Select preset or enter rating:", novice: "Novice", amateur: "Amateur", pro: "Pro", master: "Master", start: "Save", correct: "🎉 Solved! (+10 rating)", tryAgain: "Wrong move. Try again!", wrong: "Second mistake! (-1 rating)", yourTurn: "Your turn! Find the best move.", hintMsg: "Move piece from ", solutionMsg: "Make highlighted move on board", loading: "Finding puzzle...", analysisActive: "Free analysis mode" },
+      he: { rating: "דירוג", streak: "רצף", turn: "תור", whiteTurn: "תורך (לבן)", blackTurn: "תורך (שחור)", hint: "רמז", solution: "פתרון", next: "חידה הבאה", analysis: "ניתוח", modalTitle: "הדירוג שלך", modalDesc: "בחר רמה או הזן דירוג:", novice: "מתחיל", amateur: "חובבן", pro: "מתקדם", master: "מאסטר", start: "שמור", correct: "🎉 נפתר בהצלחה! (+10)", tryAgain: "מהלך שגוי. נסה שוב!", wrong: "טעות שנייה! (-1)", yourTurn: "התור שלך! מצא את המהלך הטוב ביותר.", hintMsg: "הזז את הכלי מ-", solutionMsg: "בצע את המהלך המודגש על הלוח", loading: "טוען חידה...", analysisActive: "מצב ניתוח חופשי" }
     };
 
     let currentLang = 'ru';
@@ -251,6 +317,8 @@
     let currentMoveIndex = 0;
     let isPuzzleActive = false;
     let isAnalysisMode = false;
+    let selectedSquare = null;
+    let currentPuzzleMistakes = 0;
 
     function haptic(type = 'light') {
       if (tg?.HapticFeedback) {
@@ -323,26 +391,37 @@
 
     function updateUI() {
       document.getElementById('val-rating').innerText = userRating;
-      document.getElementById('val-streak').innerText = `🔥 ${userStreak}`;
+      document.getElementById('val-streak').innerText = userStreak;
+    }
+
+    function clearHighlights() {
+      $('#board .square-55d63').removeClass('square-highlight');
     }
 
     async function loadNextPuzzle() {
-      document.getElementById('status').innerText = i18n[currentLang].loading;
+      const statusEl = document.getElementById('status');
+      const nextBtn = document.getElementById('btn-next');
+      
+      statusEl.className = "status-box";
+      statusEl.innerText = i18n[currentLang].loading;
+      
+      nextBtn.classList.remove('btn-success');
       document.getElementById('btn-analysis').classList.add('hidden');
+      
       isAnalysisMode = false;
+      currentPuzzleMistakes = 0;
+      selectedSquare = null;
+      clearHighlights();
 
       try {
-        // Получаем случайную проверенную задачу Lichess
-        const res = await fetch(`https://lichess.org/api/puzzle/next`);
+        const res = await fetch(`https://lichess.org/api/puzzle/daily`);
         const data = await res.json();
-        
         puzzleData = {
-          fen: data.puzzle.fen,
+          fen: data.game.fen,
           moves: data.puzzle.solution,
           rating: data.puzzle.rating
         };
       } catch (e) {
-        // Резервный набор верных задач Lichess
         puzzleData = {
           fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
           moves: ["c4f7", "e8f7"],
@@ -363,7 +442,6 @@
         draggable: true,
         position: puzzleData.fen,
         orientation: playerColor,
-        // Надежный векторный источник картинок Lichess
         pieceTheme: 'https://lichess1.org/assets/piece/cburnett/{piece}.svg',
         onDragStart: onDragStart,
         onDrop: onDrop,
@@ -377,6 +455,13 @@
         board.position(puzzleData.fen);
       }
 
+      // Клик по фигурам (Select & Move)
+      $('#board .square-55d63').off('click').on('click', function() {
+        const square = $(this).attr('data-square');
+        handleSquareClick(square);
+      });
+
+      // Ход противника
       const opponentMove = puzzleData.moves[0];
       const from = opponentMove.substring(0, 2);
       const to = opponentMove.substring(2, 4);
@@ -393,23 +478,62 @@
       }, 400);
     }
 
+    function handleSquareClick(square) {
+      if (!isPuzzleActive && !isAnalysisMode) return;
+
+      if (!selectedSquare) {
+        const piece = game.get(square);
+        if (piece && ((game.turn() === 'w' && piece.color === 'w') || (game.turn() === 'b' && piece.color === 'b'))) {
+          selectedSquare = square;
+          clearHighlights();
+          $(`#board .square-${square}`).addClass('square-highlight');
+        }
+      } else {
+        const moveAttempt = processPlayerMove(selectedSquare, square);
+        if (moveAttempt === 'snapback' || !moveAttempt) {
+          const piece = game.get(square);
+          if (piece && ((game.turn() === 'w' && piece.color === 'w') || (game.turn() === 'b' && piece.color === 'b'))) {
+            selectedSquare = square;
+            clearHighlights();
+            $(`#board .square-${square}`).addClass('square-highlight');
+            return;
+          }
+        }
+        selectedSquare = null;
+        clearHighlights();
+      }
+    }
+
     function onDragStart(source, piece) {
       if (!isPuzzleActive && !isAnalysisMode) return false;
       if (game.game_over()) return false;
+      
       if (isPuzzleActive) {
         if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
             (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
           return false;
         }
       }
+      selectedSquare = source;
+      clearHighlights();
+      $(`#board .square-${source}`).addClass('square-highlight');
     }
 
     function onDrop(source, target) {
+      if (!isPuzzleActive && !isAnalysisMode) return 'snapback';
+      const result = processPlayerMove(source, target);
+      selectedSquare = null;
+      clearHighlights();
+      return result;
+    }
+
+    function processPlayerMove(source, target) {
       if (isAnalysisMode) {
         const move = game.move({ from: source, to: target, promotion: 'q' });
         if (move === null) return 'snapback';
         haptic('light');
-        return;
+        board.position(game.fen());
+        return true;
       }
 
       const expectedMove = puzzleData.moves[currentMoveIndex];
@@ -417,20 +541,30 @@
       const expectedTo = expectedMove.substring(2, 4);
 
       if (source === expectedFrom && target === expectedTo) {
+        // Правильный ход
         game.move({ from: source, to: target, promotion: 'q' });
+        board.position(game.fen());
         currentMoveIndex++;
         haptic('light');
 
         if (currentMoveIndex >= puzzleData.moves.length) {
+          // УСПЕШНОЕ ЗАВЕРШЕНИЕ ЗАДАЧИ
           isPuzzleActive = false;
           userRating += 10;
           userStreak += 1;
           saveUserData();
           updateUI();
           haptic('success');
-          document.getElementById('status').innerText = i18n[currentLang].correct;
+
+          const statusEl = document.getElementById('status');
+          statusEl.innerText = i18n[currentLang].correct;
+          statusEl.className = "status-box status-success";
+
+          const nextBtn = document.getElementById('btn-next');
+          nextBtn.classList.add('btn-success');
           document.getElementById('btn-analysis').classList.remove('hidden');
         } else {
+          // Ответ противника
           setTimeout(() => {
             const nextMove = puzzleData.moves[currentMoveIndex];
             const f = nextMove.substring(0, 2);
@@ -438,15 +572,23 @@
             game.move({ from: f, to: t, promotion: 'q' });
             board.position(game.fen());
             currentMoveIndex++;
-          }, 300);
+          }, 350);
         }
+        return true;
       } else {
-        userRating = Math.max(400, userRating - 1);
-        userStreak = 0;
-        saveUserData();
-        updateUI();
+        // Ошибка
+        currentPuzzleMistakes++;
         haptic('error');
-        document.getElementById('status').innerText = i18n[currentLang].wrong;
+
+        if (currentPuzzleMistakes === 1) {
+          document.getElementById('status').innerText = i18n[currentLang].tryAgain;
+        } else if (currentPuzzleMistakes >= 2) {
+          userRating = Math.max(400, userRating - 1);
+          userStreak = 0;
+          saveUserData();
+          updateUI();
+          document.getElementById('status').innerText = i18n[currentLang].wrong;
+        }
         return 'snapback';
       }
     }
@@ -456,40 +598,31 @@
     function getHint() {
       if (!isPuzzleActive) return;
       const expectedMove = puzzleData.moves[currentMoveIndex];
-      const from = expectedMove.substring(0, 2).toUpperCase();
-      document.getElementById('status').innerText = `${i18n[currentLang].hintMsg} ${from}`;
+      const from = expectedMove.substring(0, 2);
+      clearHighlights();
+      $(`#board .square-${from}`).addClass('square-highlight');
+      document.getElementById('status').innerText = `${i18n[currentLang].hintMsg} ${from.toUpperCase()}`;
       haptic('light');
     }
 
     function showSolution() {
-      if (!puzzleData) return;
-      isPuzzleActive = false;
-      userStreak = 0;
-      saveUserData();
-      updateUI();
-
-      let tempGame = new Chess(puzzleData.fen);
-      board.position(puzzleData.fen);
-
-      let delay = 300;
-      puzzleData.moves.forEach((mv) => {
-        setTimeout(() => {
-          const f = mv.substring(0, 2);
-          const t = mv.substring(2, 4);
-          tempGame.move({ from: f, to: t, promotion: 'q' });
-          board.position(tempGame.fen());
-          haptic('light');
-        }, delay);
-        delay += 500;
-      });
+      if (!puzzleData || !isPuzzleActive) return;
+      const expectedMove = puzzleData.moves[currentMoveIndex];
+      const from = expectedMove.substring(0, 2);
+      const to = expectedMove.substring(2, 4);
+      
+      clearHighlights();
+      $(`#board .square-${from}`).addClass('square-highlight');
+      $(`#board .square-${to}`).addClass('square-highlight');
 
       document.getElementById('status').innerText = i18n[currentLang].solutionMsg;
-      document.getElementById('btn-analysis').classList.remove('hidden');
+      haptic('light');
     }
 
     function toggleAnalysis() {
       isAnalysisMode = true;
       document.getElementById('status').innerText = i18n[currentLang].analysisActive;
+      document.getElementById('status').className = "status-box";
       haptic('light');
     }
 
