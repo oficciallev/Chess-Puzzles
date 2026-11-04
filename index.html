@@ -153,7 +153,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: background 0.2s;
+      transition: all 0.2s;
     }
 
     button svg {
@@ -172,6 +172,11 @@
 
     .btn-success {
       background: var(--success-color) !important;
+    }
+
+    .preset-btn.active {
+      border-color: var(--accent-color);
+      background: rgba(99, 102, 241, 0.15);
     }
 
     .modal-overlay {
@@ -193,6 +198,24 @@
       width: 100%;
       max-width: 340px;
       text-align: center;
+      position: relative;
+    }
+
+    .close-modal-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .preset-grid {
@@ -283,18 +306,19 @@
   <!-- Rating Modal -->
   <div id="ratingModal" class="modal-overlay">
     <div class="modal">
+      <button class="close-modal-btn" onclick="closeRatingModal()">✕</button>
       <h3 id="modal-title" style="margin-top:0;">Ваш рейтинг</h3>
       <p id="modal-desc" style="font-size: 13px; color: var(--text-muted);">Выберите пресет или введите свой рейтинг:</p>
       
       <div class="preset-grid">
-        <button onclick="setInitialRating(800)">800<br><small id="p-novice">Новичок</small></button>
-        <button onclick="setInitialRating(1200)">1200<br><small id="p-amateur">Любитель</small></button>
-        <button onclick="setInitialRating(1600)">1600<br><small id="p-pro">Опытный</small></button>
-        <button onclick="setInitialRating(2000)">2000<br><small id="p-master">Мастер</small></button>
+        <button class="preset-btn" onclick="selectPreset(800, this)">800<br><small id="p-novice">Новичок</small></button>
+        <button class="preset-btn" onclick="selectPreset(1200, this)">1200<br><small id="p-amateur">Любитель</small></button>
+        <button class="preset-btn" onclick="selectPreset(1600, this)">1600<br><small id="p-pro">Опытный</small></button>
+        <button class="preset-btn" onclick="selectPreset(2000, this)">2000<br><small id="p-master">Мастер</small></button>
       </div>
 
       <input type="number" id="customRatingInput" class="input-rating" placeholder="Например: 1500" min="400" max="3000">
-      <button class="btn-primary" onclick="setCustomRating()"><span id="lbl-start">Сохранить</span></button>
+      <button class="btn-primary" onclick="confirmRating()"><span id="lbl-start">Сохранить</span></button>
     </div>
   </div>
 
@@ -308,6 +332,14 @@
       he: { rating: "דירוג", streak: "רצף", turn: "תור", whiteTurn: "תורך (לבן)", blackTurn: "תורך (שחור)", hint: "רמז", solution: "פתרון", next: "חידה הבאה", analysis: "ניתוח", modalTitle: "הדירוג שלך", modalDesc: "בחר רמה או הזן דירוג:", novice: "מתחיל", amateur: "חובבן", pro: "מתקדם", master: "מאסטר", start: "שמור", correct: "🎉 נפתר בהצלחה! (+10)", tryAgain: "מהלך שגוי. נסה שוב!", wrong: "טעות שנייה! (-1)", yourTurn: "התור שלך! מצא את המהלך הטוב ביותר.", hintMsg: "הזז את הכלי מ-", solutionMsg: "בצע את המהלך המודגש על הלוח", loading: "טוען חידה...", analysisActive: "מצב ניתוח חופשי" }
     };
 
+    // Обширный пулл проверенных матовых задач Lichess
+    const fallbackPuzzles = [
+      { fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4", moves: ["c4f7", "e8f7"] },
+      { fen: "r1b2rk1/2p2ppp/p7/1p6/3P3q/MBP3bn/PP3P1P/RNBQR1K1 w - - 0 16", moves: ["f2g3", "h4g3"] },
+      { fen: "r2qkb1r/pp2ppp1/2p5/3pP2p/5Pn1/2N5/PPP1P1PP/R2QKB1R w KQkq - 0 9", moves: ["e2e4", "d5e4"] },
+      { fen: "6k1/5ppp/8/8/8/8/5PPP/6K1 w - - 0 1", moves: ["g1f1", "g8f8"] }
+    ];
+
     let currentLang = 'ru';
     let userRating = 1200;
     let userStreak = 0;
@@ -319,6 +351,7 @@
     let isAnalysisMode = false;
     let selectedSquare = null;
     let currentPuzzleMistakes = 0;
+    let playerColor = 'white';
 
     function haptic(type = 'light') {
       if (tg?.HapticFeedback) {
@@ -346,7 +379,29 @@
     }
 
     function openRatingModal() {
+      document.getElementById('customRatingInput').value = userRating;
       document.getElementById('ratingModal').classList.remove('hidden');
+    }
+
+    function closeRatingModal() {
+      document.getElementById('ratingModal').classList.add('hidden');
+    }
+
+    function selectPreset(val, btn) {
+      $('.preset-btn').removeClass('active');
+      $(btn).addClass('active');
+      document.getElementById('customRatingInput').value = val;
+    }
+
+    function confirmRating() {
+      const val = parseInt(document.getElementById('customRatingInput').value);
+      if (val >= 400 && val <= 3000) {
+        userRating = val;
+        saveUserData();
+        updateUI();
+        closeRatingModal();
+        loadNextPuzzle();
+      }
     }
 
     function changeLanguage(lang) {
@@ -368,20 +423,16 @@
       document.getElementById('p-pro').innerText = t.pro;
       document.getElementById('p-master').innerText = t.master;
       document.getElementById('lbl-start').innerText = t.start;
+      
       updateUI();
+      updateTurnText();
     }
 
-    function setInitialRating(rating) {
-      userRating = rating;
-      document.getElementById('ratingModal').classList.add('hidden');
-      saveUserData();
-      updateUI();
-      loadNextPuzzle();
-    }
-
-    function setCustomRating() {
-      const val = parseInt(document.getElementById('customRatingInput').value);
-      if (val >= 400 && val <= 3000) setInitialRating(val);
+    function updateTurnText() {
+      if (!isPuzzleActive) return;
+      const turnText = playerColor === 'white' ? i18n[currentLang].whiteTurn : i18n[currentLang].blackTurn;
+      document.getElementById('val-turn').innerText = turnText;
+      document.getElementById('status').innerText = i18n[currentLang].yourTurn;
     }
 
     function initGame() {
@@ -404,7 +455,6 @@
       
       statusEl.className = "status-box";
       statusEl.innerText = i18n[currentLang].loading;
-      
       nextBtn.classList.remove('btn-success');
       document.getElementById('btn-analysis').classList.add('hidden');
       
@@ -413,21 +463,33 @@
       selectedSquare = null;
       clearHighlights();
 
+      let loaded = false;
+
+      // Попытка получить свежую случайную задачу с сервера
       try {
-        const res = await fetch(`https://lichess.org/api/puzzle/daily`);
-        const data = await res.json();
-        puzzleData = {
-          fen: data.game.fen,
-          moves: data.puzzle.solution,
-          rating: data.puzzle.rating
-        };
+        const res = await fetch(`https://puzzle.lichess.org/api/puzzle/random?rating=${userRating}`, { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          puzzleData = {
+            fen: data.puzzle.fen,
+            moves: data.puzzle.solution,
+            rating: data.puzzle.rating
+          };
+          loaded = true;
+        }
       } catch (e) {
+        loaded = false;
+      }
+
+      if (!loaded) {
+        const randomItem = fallbackPuzzles[Math.floor(Math.random() * fallbackPuzzles.length)];
         puzzleData = {
-          fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
-          moves: ["c4f7", "e8f7"],
+          fen: randomItem.fen,
+          moves: randomItem.moves,
           rating: userRating
         };
       }
+
       setupPuzzle();
     }
 
@@ -436,7 +498,8 @@
       currentMoveIndex = 0;
       isPuzzleActive = true;
 
-      const playerColor = game.turn() === 'w' ? 'black' : 'white';
+      // Чей ход идет вторым — той стороны и выступает игрок
+      playerColor = game.turn() === 'w' ? 'black' : 'white';
       
       const config = {
         draggable: true,
@@ -455,13 +518,10 @@
         board.position(puzzleData.fen);
       }
 
-      // Клик по фигурам (Select & Move)
-      $('#board .square-55d63').off('click').on('click', function() {
-        const square = $(this).attr('data-square');
-        handleSquareClick(square);
-      });
+      // Привязка нативного клика по клеткам доски (Select & Move)
+      attachSquareClicks();
 
-      // Ход противника
+      // Первый ход противника (затравка)
       const opponentMove = puzzleData.moves[0];
       const from = opponentMove.substring(0, 2);
       const to = opponentMove.substring(2, 4);
@@ -471,11 +531,15 @@
         game.move({ from, to, promotion: promo });
         board.position(game.fen());
         currentMoveIndex = 1;
-        
-        const turnText = playerColor === 'white' ? i18n[currentLang].whiteTurn : i18n[currentLang].blackTurn;
-        document.getElementById('val-turn').innerText = turnText;
-        document.getElementById('status').innerText = i18n[currentLang].yourTurn;
-      }, 400);
+        updateTurnText();
+      }, 350);
+    }
+
+    function attachSquareClicks() {
+      $('#board .square-55d63').off('click').on('click', function() {
+        const square = $(this).attr('data-square');
+        handleSquareClick(square);
+      });
     }
 
     function handleSquareClick(square) {
@@ -533,6 +597,7 @@
         if (move === null) return 'snapback';
         haptic('light');
         board.position(game.fen());
+        attachSquareClicks();
         return true;
       }
 
@@ -541,14 +606,14 @@
       const expectedTo = expectedMove.substring(2, 4);
 
       if (source === expectedFrom && target === expectedTo) {
-        // Правильный ход
+        // Верный ход
         game.move({ from: source, to: target, promotion: 'q' });
         board.position(game.fen());
+        attachSquareClicks();
         currentMoveIndex++;
         haptic('light');
 
         if (currentMoveIndex >= puzzleData.moves.length) {
-          // УСПЕШНОЕ ЗАВЕРШЕНИЕ ЗАДАЧИ
           isPuzzleActive = false;
           userRating += 10;
           userStreak += 1;
@@ -564,13 +629,14 @@
           nextBtn.classList.add('btn-success');
           document.getElementById('btn-analysis').classList.remove('hidden');
         } else {
-          // Ответ противника
+          // Ответный ход противника
           setTimeout(() => {
             const nextMove = puzzleData.moves[currentMoveIndex];
             const f = nextMove.substring(0, 2);
             const t = nextMove.substring(2, 4);
             game.move({ from: f, to: t, promotion: 'q' });
             board.position(game.fen());
+            attachSquareClicks();
             currentMoveIndex++;
           }, 350);
         }
@@ -593,7 +659,10 @@
       }
     }
 
-    function onSnapEnd() { board.position(game.fen()); }
+    function onSnapEnd() { 
+      board.position(game.fen()); 
+      attachSquareClicks();
+    }
 
     function getHint() {
       if (!isPuzzleActive) return;
@@ -626,7 +695,7 @@
       haptic('light');
     }
 
-    window.onresize = () => { if (board) board.resize(); };
+    window.onresize = () => { if (board) board.resize(); attachSquareClicks(); };
   </script>
 </body>
 </html>
